@@ -1,0 +1,9 @@
+version: '3'
+services:
+  session_handler:
+    restart: always
+    build: .
+    # ports:
+    # - '80:80'
+    environment:
+      - NODE_ENV=production

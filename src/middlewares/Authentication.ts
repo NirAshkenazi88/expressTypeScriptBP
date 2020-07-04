@@ -8,7 +8,7 @@ export const checkJWT = async (req: Request, res: Response, next: any) => {
     if (token) {
       token && Array.isArray(token) ? (token = token[0]) : '';
       token = token.replace(/Bearer /gi, '');
-      jwt.verify(token, config.appSecert, (err, decoded) => {
+      jwt.verify(token, config.appSecert, (err: any, decoded: string) => {
         if (err) next('Failed to authenticate token.');
         if (decoded) req.headers['jwt'] = JSON.stringify(decoded);
         next();

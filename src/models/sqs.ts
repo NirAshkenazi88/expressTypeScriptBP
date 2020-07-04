@@ -7,6 +7,7 @@ AWS.config.update({
   accessKeyId: config.AWS.ACCESS_KEY_ID,
   secretAccessKey: config.AWS.SECRET_ACCESS_KEY,
 });
+
 const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
 
 const params = {
@@ -16,14 +17,20 @@ const params = {
   WaitTimeSeconds: 10,
 };
 
-const reciveMessage = (sqsUrl: string) => {
+const reciveMessage = (
+  sqsUrl: string
+): Promise<{ MessageId: string | undefined; ReceiptHandle: string | undefined, Body: string | undefined }> => {
   return new Promise((resolve, reject) => {
     try {
       sqs.receiveMessage(
         { ...params, QueueUrl: config.AWS.SQS_QUEUE_URL + sqsUrl },
         function (err, data) {
           if (err) reject('Error: ' + err);
-          if (data.Messages) resolve(data);
+          if (data.Messages?.length) {
+            const { MessageId, ReceiptHandle, Body } = data.Messages[0];
+            resolve({ MessageId, ReceiptHandle, Body });
+          }
+          reject({ MessageId: 0, ReceiptHandle: 0, Body: 'no msg' });
         }
       );
     } catch (e) {
@@ -32,14 +39,18 @@ const reciveMessage = (sqsUrl: string) => {
   });
 };
 
-const consume = (func: (message: AWS.SQS.Message) => void) => {
+const consume = (
+  queueName: string,
+  func: (message: AWS.SQS.Message) => void
+) => {
   try {
     const app = Consumer.create({
-      queueUrl: config.AWS.SQS_QUEUE_URL,
+      queueUrl: config.AWS.SQS_QUEUE_URL + queueName,
       batchSize: 10,
       handleMessage: async (message) => {
         func(message);
       },
+      sqs: new AWS.SQS(),
     });
 
     app.on('error', (err) => {
@@ -48,15 +59,17 @@ const consume = (func: (message: AWS.SQS.Message) => void) => {
 
     app.start();
   } catch (e) {
-    throw new Error(e);
+    console.log(e)
+    // throw new Error(e);
   }
 };
 
-const deleteSQSMessage = (receiptHandle: string) => {
+const deleteSQSMessage = (receiptHandle: string, QueueUrl: string) => {
+  console.log('deleteSQSMessage')
   return new Promise((resolve, reject) => {
     try {
       const deleteParams = {
-        QueueUrl: config.AWS.SQS_QUEUE_URL,
+        QueueUrl: config.AWS.SQS_QUEUE_URL + QueueUrl,
         ReceiptHandle: receiptHandle,
       };
 

@@ -12,11 +12,11 @@ var pool = mysql.createPool({
 
 export const DBQuery = (
   sql: string
-): Promise<{ status: string; result: mysql.MysqlError | any }> => {
+): Promise<{ status: boolean; result: mysql.MysqlError | any }> => {
   return new Promise((resolve, reject) => {
-    pool.query(sql, function (err, result, fields) {
-      if (err) return reject({ status: 'error', result: err });
-      return resolve({ status: 'success', result });
+    pool.query(sql, function (err: any, result: any, fields: any) {
+      if (err) return reject({ status: false, result: err });
+      return resolve({ status: true, result });
     });
   });
 };
