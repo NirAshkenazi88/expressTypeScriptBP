@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node", // Debug node
+      // VS Code has to launch the program
+      "request": "launch",
+      // Just a name
+      "name": "Launch Program",
+      // What file to start
+      "program": "${workspaceFolder}/src/index.ts",
+      // How to build
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      // Where is the output. Can specify full path as well
+      // ${workspaceFolder} is the base directory in the project
+      "outFiles": ["${workspaceFolder}/build/**/*.js"]
+    }
+  ]
+}
